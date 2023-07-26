@@ -1,6 +1,6 @@
 package com.example.pharmacyRecommend.pharmacy.service;
 
-import com.example.pharmacyRecommend.direction.dto.PharmacyDto;
+import com.example.pharmacyRecommend.pharmacy.dto.PharmacyDto;
 import com.example.pharmacyRecommend.pharmacy.entity.Pharmacy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

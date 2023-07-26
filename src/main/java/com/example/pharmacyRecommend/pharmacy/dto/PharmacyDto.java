@@ -1,4 +1,4 @@
-package com.example.pharmacyRecommend.direction.dto;
+package com.example.pharmacyRecommend.pharmacy.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
