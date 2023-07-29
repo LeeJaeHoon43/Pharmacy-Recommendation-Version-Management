@@ -3,14 +3,17 @@ package com.example.pharmacyRecommend.pharmacy.service;
 import com.example.pharmacyRecommend.api.dto.DocumentDto;
 import com.example.pharmacyRecommend.api.dto.KakaoApiResponseDto;
 import com.example.pharmacyRecommend.api.service.KakaoAddressSearchService;
+import com.example.pharmacyRecommend.direction.dto.OutputDto;
 import com.example.pharmacyRecommend.direction.entity.Direction;
 import com.example.pharmacyRecommend.direction.service.DirectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,17 +25,34 @@ public class PharmacyRecommendationService {
     private final KakaoAddressSearchService kakaoAddressSearchService;
     private final DirectionService directionService;
 
-    public void recommendPharmacyList(String address) {
+    public List<OutputDto> recommendPharmacyList(String address) {
         KakaoApiResponseDto kakaoApiResponseDto = kakaoAddressSearchService.requestAddressSearch(address);
 
         if (Objects.isNull(kakaoApiResponseDto) || CollectionUtils.isEmpty(kakaoApiResponseDto.getDocumentList())) {
             log.error("[PharmacyRecommendationService.recommendPharmacyList fail] Input address: {}", address);
+            return Collections.emptyList();
         }
 
         DocumentDto documentDto = kakaoApiResponseDto.getDocumentList().get(0);
 
+        // 카카오 카테고리를 이용한 장소 검색 API 이용
         // List<Direction> directionList = directionService.buildDirectionList(documentDto);
+
+        // 공공기관 약국 데이터 및 거리 계산 알고리즘 이용
         List<Direction> directionList = directionService.buildDirectionListByCategoryApi(documentDto);
-        directionService.saveAll(directionList);
+
+        return directionService.saveAll(directionList)
+                .stream()
+                .map(this::convertToOutputDto)
+                .collect(Collectors.toList());
+    }
+    
+    private OutputDto convertToOutputDto(Direction direction){
+        return OutputDto.builder()
+                .pharmacyName(direction.getTargetPharmacyName())
+                .pharmacyAddress(direction.getTargetAddress())
+                .directionUrl("todo") // TODO
+                .distance(String.format("%.2f km", direction.getDistance()))
+                .build();
     }
 }
